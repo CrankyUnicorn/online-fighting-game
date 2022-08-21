@@ -1,0 +1,76 @@
+body {
+  padding: 0;
+  margin: 0;
+  display: block;
+  overflow: hidden;
+}
+
+#mainCanvas {
+  z-index: 1;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+}
+
+.ui {
+  z-index: 2;
+  padding: 0;
+  margin: 0;
+  width: 800px;
+  /* width: 100%; */
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+.healthBarBoxRight {
+  flex-grow: 10;
+  margin: 0 10px;
+  height: auto;
+  border: 2px solid red;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+}
+.healthBarBoxLeft {
+  flex-grow: 10;
+  margin: 0 10px;
+  height: auto;
+  border: 2px solid red;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+.healthBarRight {
+  margin: 5px;
+  /* width: 100%; */
+  height: 20px;
+  background: orange;
+  border: 2px solid orangered;
+  border-radius: 5px;
+}
+.healthBarLeft {
+  margin: 5px;
+  /* width: 100%; */
+  height: 20px;
+  background: orange;
+  border: 2px solid orangered;
+  border-radius: 5px;
+}
+.timer {
+  height: 50px;
+  margin: 10px 0;
+  flex-grow: 1;
+  background: orange;
+  border: 2px solid red;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.timerText {
+ color: white;
+ font-size: xx-large;
+ font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}

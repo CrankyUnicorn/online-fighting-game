@@ -1,5 +1,8 @@
 // todo: list of issues
 /* direction of attacks of right enemy is wrong */
+/* direction of mirror sprites is wrong */
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
   const loadScripts = (index = 0) => {
@@ -31,8 +34,8 @@ window.addEventListener("load", event => {
     background.update();
     shop.update();
 
-    target.update();
-    player.update();
+    target.update(player);
+    player.update(target);
 
     // todo: optimize - no state check; pass element to owner
     // UI update

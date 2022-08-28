@@ -68,7 +68,7 @@ webSocket.on('connection', (ws, req) => {
     const enemyId = clients[ws.id].enemyId;
 
     // * fight - trade messages
-    if (enemyId) {
+    if (enemyId && clients[enemyId]) {
       sendFlag = true;
 
         if (clients[ws.id].health <= 0
@@ -197,6 +197,18 @@ webSocket.on('connection', (ws, req) => {
 
   ws.on('close', () => {
     if (clients[ws.id]) {
+      if (clients[ws.id].controller === 1) {
+        if (clients[matches[1].controllerRight]) {
+          clients[matches[1].controllerRight].enemyId = false;
+        }
+        matches[1].controllerLeft = false;
+      } else if (clients[ws.id].controller === 2) {
+        if (clients[matches[1].controllerLeft]) {
+          clients[matches[1].controllerLeft].enemyId = false;
+        }
+        matches[1].controllerRight = false;
+      }
+
       delete clients[ws.id];
       console.log(`${ws.id} > Deleted client: ${ws.id}`);
     }

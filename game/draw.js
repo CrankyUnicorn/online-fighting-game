@@ -6,6 +6,11 @@ loaded = () => {
 const canvas = document.getElementById('mainCanvas');
 const context = canvas.getContext('2d');
 
+context.mozImageSmoothingEnabled = false;
+context.webkitImageSmoothingEnabled = false;
+context.msImageSmoothingEnabled = false;
+context.imageSmoothingEnabled = false;
+
 canvas.width =  800; // visualViewport.width;
 canvas.height = 600; // visualViewport.height;
 
@@ -26,18 +31,32 @@ const drawRect = (props) => {
 }
 
 const drawImage = (props) => {
-  // todo: calculate ration and scale to the nearest in relation to the window size
-  const { image, x, y, w, h, ox, oy, ow, oh, cut = false } = props;
+  // todo: calculate ratios
+  const { image, x, y, w, h, ox, oy, ow, oh, cut = false, imageData = false, mirror = false  } = props;
 
-  if (!cut) {
-    const { image, x, y, w, h } = props;
-
-    context.drawImage(image, x, y, w, h);
+  if (mirror && imageData) {
+    if (!cut) {
+      context.putImageData(imageData, x, y)
+    } else {
+      context.putImageData(imageData, x, y, ox, oy, ow, oh)
+    }
   } else {
-    context.drawImage(image, ox, oy, ow, oh, x, y, w, h);
-  }
+    if (!cut) {
+      context.drawImage(image, x, y, w, h);
+    } else {
+      context.drawImage(image, ox, oy, ow, oh, x, y, w, h);
+    }
+  } 
 }
 
+const drawImageMirror = (image) => {
+  context.save();
+  context.scale(-1, 1);
+  context.drawImage(image, image.width * -1, 0, image.width, image.height);
+  const mirrorImage = context.getImageData(0, 0, image.width, image.height)
+  context.restore();
+  return mirrorImage;
+}
 
 class Sprite {
   constructor({ 
@@ -46,47 +65,56 @@ class Sprite {
       size = { w: 0, h: 0 },
       cutPosition = { x: 0, y: 0 },
       cutSize = { w: 0, h: 0 },
-      maxFrames = 1,
       imageSrc = null,
       cut = false,
-      alignment = [0, 0] 
+      cutLayout = { x: 1, y: 1 },
+      animationFrames = { start: 0, end: 0 },
+      alignment = { v: 1.0, h: 1.0 },
     } = {
       name: '',
+      size: { w: 0, h: 0 },
       cutPosition: { x: 0, y: 0 },
       cutSize: { w: 0, h: 0 },
-      size: { w: 0, h: 0 },
       position: { x: 0, y: 0 },
-      maxFrames: 1,
       imageSrc: null,
       cut: false,
-      alignment: [0, 0]
+      cutLayout: { x: 1, y: 1 },
+      animationFrames: { start: 0, end: 0 },
+      alignment: { v: 1.0, h: 1.0 },
     }) {
     this.name = name;
+    this.imageMirror;
     this.image = new Image();
     this.image.src = imageSrc;
+    this.image.onload = () => {
+      this.imageMirror = drawImageMirror(this.image);
+    }
 
+    this.mirror = false,
     this.cut = cut,
-    this.maxFrames = maxFrames;
+    this.cutLayout = cutLayout,
+    this.animationFrames = animationFrames;
     this.currentFrame = 0;
-    this.scale = 1;
     this.alignment = alignment;
 
     this.frameSize = {
-      w: Math.floor( (this.image.width) / maxFrames),
-      h: this.image.height
+      w: Math.floor((this.image.width) / this.cutLayout.x),
+      h: Math.floor((this.image.height) / this.cutLayout.y) 
     }
 
-    this.position = position;
     this.size = {
       w: size.w > 0 ? size.w : this.frameSize.w,
       h: size.h > 0 ? size.h : this.frameSize.h
     }
+    this.position = {
+      x: position.x - this.size.w + Math.floor(this.alignment.h * this.size.w),
+      y: position.y - this.size.h + Math.floor(this.alignment.v * this.size.h)
+    }
 
     this.cutPosition = {
-      x: cut ? this.frameSize.w * this.currentFrame : cutPosition.x > 0 ? cutPosition.x : 0,
-      y: cut ? 0 : cutPosition.x > 0 ? cutPosition.x : 0
+      x: cut ? (this.currentFrame % cutLayout.x) * this.frameSize.w : cutPosition.x > 0 ? cutPosition.x : 0,
+      y: cut ? Math.floor(this.currentFrame / cutLayout.x) * this.frameSize.h : cutPosition.x > 0 ? cutPosition.x : 0
     }
-    cutPosition;
 
     this.cutSize = {
       w: cut ? this.frameSize.w : cutSize.w > 0 ? cutSize.w : this.size.w,
@@ -96,8 +124,10 @@ class Sprite {
 
   draw = () => {
     drawImage({
+      mirror: this.mirror,
       cut: this.cut,
       image: this.image,
+      imageData: this.imageMirror,
       x: this.position.x,
       y: this.position.y,
       w: this.size.w,
@@ -109,8 +139,15 @@ class Sprite {
     })
   }
 
-  update = () => {
-    this.currentFrame = (this.currentFrame + 1) % this.maxFrames;
+  update = (props = {}) => {
+    this.position = props?.position ? props.position : this.position; 
+    this.position = {
+      x: this.position.x - this.size.w + Math.floor(this.alignment.h * this.size.w),
+      y: this.position.y - this.size.h + Math.floor(this.alignment.v * this.size.h)
+    }
+   
+    this.mirror = props.mirror !== null ? props.mirror : this.mirror; 
+    this.currentFrame = this.currentFrame === this.animationFrames.end ? this.animationFrames.start : this.currentFrame + 1;
     this.draw();
   }
 }

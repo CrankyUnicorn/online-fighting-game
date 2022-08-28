@@ -14,8 +14,17 @@ class Status {
 }
 
 class Fighter extends Status {
-  constructor({ name = '', position = { x: 0, y: 0 }, size = { w: 0, h: 0 }, isPlayer = false }
-    = { name: '', position: { x: 0, y: 0 }, size: { w: 0, h: 0 }, isPlayer: false }) {
+  constructor({ 
+    name = '',
+    position = { x: 0, y: 0 },
+    size = { w: 0, h: 0 },
+    isPlayer = false
+  } = {
+    name: '',
+    position: { x: 0, y: 0 },
+    size: { w: 0, h: 0 },
+    isPlayer: false
+  }) {
     super();
     this.name = name;
     this.position = position;
@@ -30,10 +39,11 @@ class Fighter extends Status {
     this.isOnAir = true;
     this.isCrouching = false;
     this.pose = 'stand';
-    this.directionRight = true;
+    this.mirror = false;
     this.health = 100;
     this.stamina = 100;
     this.hit = { resolved: true, posX: false, posY: false };
+
     // * data to be exanged with enemy - hits, damage, forces
     this.hitPosition = {
       resolved: true,
@@ -49,8 +59,23 @@ class Fighter extends Status {
       downForce: 0,
       horizontalForce: 0
     };
+
     // * local controller
     this.input = isPlayer ? this.controlOne : () => { };
+
+    // * sprite and animation
+    this.sprite = new Sprite({
+      name: this.name,
+      cut: true,
+      cutLayout: { x: 8, y: 7 },
+      animationFrames: { start: 0, end: 5 },
+      position: { x: 0, y: 0 },
+      size: { w: 128, h: 128 },
+      alignment: { v: 0.5, h: 0.6 },
+      imageSrc: './sprites/character/char_blue.png'
+    });
+
+    this.spriteUpdate = this.sprite.update;
   }
 
   // Colliders
@@ -70,7 +95,7 @@ class Fighter extends Status {
       boxProps.w = hitSize.w;
       boxProps.h = hitSize.h;
 
-      if (!this.directionRight) {
+      if (this.mirror) {
         boxProps.x = this.position.x + this.poseSize.w - hitSize.w;
       }
     } else {
@@ -81,7 +106,7 @@ class Fighter extends Status {
       boxProps.w = hitSize.w;
       boxProps.h = hitSize.h;
 
-      if (!this.directionRight) {
+      if (this.mirror) {
         boxProps.x = this.position.x + this.poseSize.w - hitSize.w;
       }
     }
@@ -101,7 +126,7 @@ class Fighter extends Status {
       boxProps.w = hitSize.w;
       boxProps.h = hitSize.h;
 
-      if (!this.directionRight) {
+      if (this.mirror) {
         boxProps.x = this.position.x + this.poseSize.w - hitSize.w;
       }
     } else {
@@ -112,7 +137,7 @@ class Fighter extends Status {
       boxProps.w = hitSize.w;
       boxProps.h = hitSize.h;
 
-      if (!this.directionRight) {
+      if (this.mirror) {
         boxProps.x = this.position.x + this.poseSize.w - hitSize.w;
       }
     }
@@ -155,7 +180,7 @@ class Fighter extends Status {
         this.hitForce = {
           jumpForce: hit ? 5 : 0,
           downForce: hit ? 0 : 0,
-          horizontalForce: hit ? this.directionRight ? 10 : -10 : 0
+          horizontalForce: hit ? !this.mirror ? 10 : -10 : 0
         };
         break;
       case 'punch':
@@ -173,7 +198,7 @@ class Fighter extends Status {
         this.hitForce = {
           jumpForce: hit ? 5 : 0,
           downForce: hit ? 0 : 0,
-          horizontalForce: hit ? this.directionRight ? 10 : -10 : 0
+          horizontalForce: hit ? !this.mirror ? 10 : -10 : 0
         };
         break;
       default:
@@ -189,6 +214,7 @@ class Fighter extends Status {
           this.poseSize.h = this.initialSize.h;
         }
         drawRect(this.hitBox());
+        this.spriteUpdate(this);
         break;
       // jump start
       case 'jump':
@@ -308,10 +334,6 @@ class Fighter extends Status {
     keysUp = [];
   }
 
-  // Actions
-  rotate = () => {
-    this.directionRight = !this.directionRight;
-  }
 
   jump = () => {
     this.jumpForce += 20;
@@ -470,17 +492,17 @@ class Fighter extends Status {
   faceTarget = (target) => {
     if (!this.isOnAir && !this.isProne) {
       if (this.position.x > target.position.x) {
-        this.directionRight = false;
-      } else {
-        this.directionRight = true;
+        this.mirror = true;
+      } else if (this.position.x < target.position.x) {
+        this.mirror = false;
       }
     }
   }
 
-  update = () => {
+  update = (target) => {
     this.input();
 
-    if (this.enemyId) {
+    if (target) {
 
       this.faceTarget(target);
       this.forces();

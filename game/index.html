@@ -3,25 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="ws fighting game" content="width=device-width, initial-scale=1.0">
   <title>JS Fight Game</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="gamestyle.css">
 </head>
 <body>
-  <div>
-    <dir id="ui" class="ui">
+  <div id="gameWindow">
+    <div id="ui" class="ui">
       <div id="healthBoxOne" class="healthBarBoxLeft">
-        <div id="healthBarOne" class="healthBarLeft"></div>
+        <div id="healthBarOne" class="healthBar"></div>
       </div>
       <div id="timer" class="timer">
         <div id="timerText" class="timerText"></div>
       </div>
       <div id="healthBoxTwo" class="healthBarBoxRight">
-        <div id="healthBarTwo" class="healthBarRight"></div>
+        <div id="healthBarTwo" class="healthBar"></div>
       </div>
-    </dir>
+    </div>
     <canvas id="mainCanvas"></canvas>
   </div>
+
   <script src="index.js" type="text/javascript"></script>
 </body>
 </html>

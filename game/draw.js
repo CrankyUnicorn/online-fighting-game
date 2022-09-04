@@ -32,30 +32,13 @@ const drawRect = (props) => {
 
 const drawImage = (props) => {
   // todo: calculate ratios
-  const { image, x, y, w, h, ox, oy, ow, oh, cut = false, imageData = false, mirror = false  } = props;
-
-  if (mirror && imageData) {
-    if (!cut) {
-      context.putImageData(imageData, x, y)
-    } else {
-      context.putImageData(imageData, x, y, ox, oy, ow, oh)
-    }
+  const { image, x, y, w, h, ox, oy, ow, oh, cut = false  } = props;
+ 
+  if (!cut) {
+    context.drawImage(image, x, y, w, h);
   } else {
-    if (!cut) {
-      context.drawImage(image, x, y, w, h);
-    } else {
-      context.drawImage(image, ox, oy, ow, oh, x, y, w, h);
-    }
-  } 
-}
-
-const drawImageMirror = (image) => {
-  context.save();
-  context.scale(-1, 1);
-  context.drawImage(image, image.width * -1, 0, image.width, image.height);
-  const mirrorImage = context.getImageData(0, 0, image.width, image.height)
-  context.restore();
-  return mirrorImage;
+    context.drawImage(image, ox, oy, ow, oh, x, y, w, h);
+  }
 }
 
 class Sprite {
@@ -83,14 +66,10 @@ class Sprite {
       alignment: { v: 1.0, h: 1.0 },
     }) {
     this.name = name;
-    this.imageMirror;
     this.image = new Image();
     this.image.src = imageSrc;
-    this.image.onload = () => {
-      this.imageMirror = drawImageMirror(this.image);
-    }
-
-    this.mirror = false,
+    
+    this.mirror = false;
     this.cut = cut,
     this.cutLayout = cutLayout,
     this.animationFrames = animationFrames;
@@ -124,10 +103,9 @@ class Sprite {
 
   draw = () => {
     drawImage({
-      mirror: this.mirror,
       cut: this.cut,
       image: this.image,
-      imageData: this.imageMirror,
+      mirror: this.mirror,
       x: this.position.x,
       y: this.position.y,
       w: this.size.w,
@@ -145,9 +123,14 @@ class Sprite {
       x: this.position.x - this.size.w + Math.floor(this.alignment.h * this.size.w),
       y: this.position.y - this.size.h + Math.floor(this.alignment.v * this.size.h)
     }
-   
-    this.mirror = props.mirror !== null ? props.mirror : this.mirror; 
-    this.currentFrame = this.currentFrame === this.animationFrames.end ? this.animationFrames.start : this.currentFrame + 1;
+    this.mirror = props.mirror !== null ? props.mirror : this.mirror;
+    if (this.mirror) {
+      this.currentFrame = this.currentFrame === this.animationFrames.start - (this.animationFrames.end - this.animationFrames.start) 
+        ? this.animationFrames.start - 1 : this.currentFrame - 1;
+    } else {
+      this.currentFrame = this.currentFrame === this.animationFrames.end 
+        ? this.animationFrames.start : this.currentFrame + 1;
+    }
     this.draw();
   }
 }

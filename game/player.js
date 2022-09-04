@@ -67,8 +67,8 @@ class Fighter extends Status {
     this.sprite = new Sprite({
       name: this.name,
       cut: true,
-      cutLayout: { x: 8, y: 7 },
-      animationFrames: { start: 0, end: 5 },
+      cutLayout: { x: 16, y: 7 },
+      animationFrames: { start: 8, end: 13 },
       position: { x: 0, y: 0 },
       size: { w: 128, h: 128 },
       alignment: { v: 0.5, h: 0.6 },

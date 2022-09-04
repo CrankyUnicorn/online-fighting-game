@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
       index++;
       if (index < scriptsSrc.length) {
         loadScripts(index);
+      } else { 
+        start();
       }
       loaded();
     };
@@ -25,12 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadScripts()
 });
 
-window.addEventListener("load", event => {
+const start = () => {
 
   console.log('LOADED: ./index.js');
 
   setInterval(() => {
-    // todo: optimize - background should be a div
     background.update();
     shop.update();
 
@@ -54,4 +55,4 @@ window.addEventListener("load", event => {
     }
   }, 33)
 
-});
+};
